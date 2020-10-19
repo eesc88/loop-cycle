@@ -1,0 +1,36 @@
+{
+  "name": "loop-cycle",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lib/index",
+  "typings": "lib/index.d.ts",
+  "scripts": {
+    "test": "mocha --globals setImmediate,clearImmediate --exit --check-leaks --colors -t 30000 --reporter spec \"test/*.js\"",
+    "_dist": "gulp dist",
+    "dist": "node version.js && npm run _dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eesc88/loop-cycle.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/eesc88/loop-cycle/issues"
+  },
+  "homepage": "https://github.com/eesc88/loop-cycle#readme",
+  "dependencies": {
+    "async": "^3.2.0",
+    "moment": "^2.27.0"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "cross-env": "^7.0.2",
+    "mocha": "^8.1.1",
+    "nodemon": "^1.19.1",
+    "yamljs": "^0.3.0"
+  },
+  "files": [
+    "lib"
+  ]
+}
