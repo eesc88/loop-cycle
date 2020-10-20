@@ -7,8 +7,11 @@ class Loop {
     name: String
     INTERVAL_MINI_TIME: Number | any
     INTERVAL_MAX_TIME: Number
-    LOOP_RUN: Boolean
     TIME_UNIT: Number | any
+    logger: any
+    free: Boolean = false
+    delay_timer: any
+    deamon_timer: any
     constructor(options) {
         const { name, INTERVAL_MINI_TIME, INTERVAL_MAX_TIME, loop } = options
         this.name = name || 'Loop'
@@ -17,13 +20,13 @@ class Loop {
         if (this.INTERVAL_MAX_TIME <= this.INTERVAL_MINI_TIME) {
             throw new Error('INTERVAL_MAX_TIME must be greater than INTERVAL_MINI_TIME.')
         }
-        this.LOOP_RUN = true
         this.TIME_UNIT = 1e3
+        this.logger = options.logger || console
         this.deamon(loop, (error) => {
             if (error) {
-                console.error('Loop error.[name=%s,error=%j]', this.name, error)
+                this.logger.error('Loop error.[name=%s,error=%j]', this.name, error)
             } else {
-                console.error('Loop interruption.[name=%s]', this.name)
+                this.logger.error('Loop interruption.[name=%s]', this.name)
             }
         })
     }
@@ -37,18 +40,18 @@ class Loop {
         function deamonEvent() {
             deamon_counter++
             if ((deamon_counter * this.TIME_UNIT) > this.INTERVAL_MAX_TIME) {
-                console.warn('Loop callbark TimeOut.[name=%s]', this.name)
+                this.logger.warn('Loop callbark TimeOut.[name=%s]', this.name)
                 if (loopCallback) {
                     deamon_counter = 0
-                    console.log('Call Loop Callbark.[name=%s]', this.name)
+                    this.logger.log('Call Loop Callbark.[name=%s]', this.name)
                     loopCallback()
                 } else {
                     deamon_counter = 0
-                    console.warn('LoopCallbark not init.[name=%s]', this.name)
+                    this.logger.warn('LoopCallbark not init.[name=%s]', this.name)
                 }
             }
         }
-        setInterval(deamonEvent.bind(this), 1 * this.TIME_UNIT)
+        this.deamon_timer = setInterval(deamonEvent.bind(this), 1 * this.TIME_UNIT)
         let loopCallback = null
         this.run((cb) => {
             loopCallback = cb
@@ -68,13 +71,16 @@ class Loop {
         let current_time = 0
         async.whilst((cb) => {
             current_time = moment().valueOf()
-            cb(null, this.LOOP_RUN)
+            cb(null, !this.free)
         }, (cb) => {
+            if (this.free) {
+                return;
+            }
             if ((current_time - cycle_last_time) > this.INTERVAL_MINI_TIME) {
                 cycle_last_time = moment().valueOf()
                 callRun()
             } else {
-                setTimeout(() => {
+                this.delay_timer = setTimeout(() => {
                     cycle_last_time = moment().valueOf()
                     callRun()
                 }, this.INTERVAL_MINI_TIME - (current_time - cycle_last_time))
@@ -83,7 +89,7 @@ class Loop {
                 let isCallBack = false;
                 function reCb(error) {
                     if (isCallBack) {
-                        console.warn('Ignore the callback. The Loop callback is complete.')
+                        this.logger.warn('Ignore the callback. The Loop callback is complete.')
                     } else {
                         isCallBack = true
                         cb(error)
@@ -93,5 +99,18 @@ class Loop {
             }
         }, cb)
     }
+    /**
+     * Close the loop.
+     */
+    stop() {
+        if (this.free) {
+            this.logger.warn('The loop is closed.')
+        } else {
+            this.free = true;
+            clearInterval(this.deamon_timer)
+            clearTimeout(this.delay_timer)
+        }
+        return this.free
+    }
 }
-module.exports = Loop
+export = Loop 

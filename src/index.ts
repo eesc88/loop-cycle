@@ -10,9 +10,11 @@ class Loop {
     name: String
     INTERVAL_MINI_TIME: Number | any
     INTERVAL_MAX_TIME: Number
-    LOOP_RUN: Boolean
     TIME_UNIT: Number | any
     logger: any
+    free: Boolean = false
+    delay_timer: any
+    deamon_timer: any
 
     constructor(options) {
         const { name, INTERVAL_MINI_TIME, INTERVAL_MAX_TIME, loop } = options
@@ -22,7 +24,6 @@ class Loop {
         if (this.INTERVAL_MAX_TIME <= this.INTERVAL_MINI_TIME) {
             throw new Error('INTERVAL_MAX_TIME must be greater than INTERVAL_MINI_TIME.')
         }
-        this.LOOP_RUN = true
         this.TIME_UNIT = 1e3
 
         this.logger = options.logger || console
@@ -58,7 +59,7 @@ class Loop {
             }
         }
 
-        setInterval(deamonEvent.bind(this), 1 * this.TIME_UNIT)
+        this.deamon_timer = setInterval(deamonEvent.bind(this), 1 * this.TIME_UNIT)
 
         let loopCallback = null
 
@@ -81,13 +82,16 @@ class Loop {
         let current_time = 0
         async.whilst((cb) => {
             current_time = moment().valueOf()
-            cb(null, this.LOOP_RUN)
+            cb(null, !this.free)
         }, (cb) => {
+            if (this.free) {
+                return;
+            }
             if ((current_time - cycle_last_time) > this.INTERVAL_MINI_TIME) {
                 cycle_last_time = moment().valueOf()
                 callRun()
             } else {
-                setTimeout(() => {
+                this.delay_timer = setTimeout(() => {
                     cycle_last_time = moment().valueOf()
                     callRun()
                 }, this.INTERVAL_MINI_TIME - (current_time - cycle_last_time))
@@ -108,6 +112,20 @@ class Loop {
             }
         }, cb)
     }
+
+    /**
+     * Close the loop.
+     */
+    stop() {
+        if (this.free) {
+            this.logger.warn('The loop is closed.')
+        } else {
+            this.free = true;
+            clearInterval(this.deamon_timer)
+            clearTimeout(this.delay_timer)
+        }
+        return this.free
+    }
 }
 
-module.exports = Loop
+export = Loop 
