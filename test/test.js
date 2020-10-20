@@ -1,6 +1,6 @@
 const chai = require('chai');
 const { expect, assert } = chai;
-const loop = require('../lib')
+const loop = require('../lib').Loop
 
 describe('loop', () => {
 
