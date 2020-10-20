@@ -1,7 +1,7 @@
 {
   "name": "loop-cycle",
-  "version": "1.0.3",
-  "description": "",
+  "version": "1.0.4",
+  "description": "Controlled cycle",
   "main": "lib/index",
   "typings": "lib/index.d.ts",
   "scripts": {
