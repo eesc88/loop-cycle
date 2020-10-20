@@ -113,4 +113,4 @@ class Loop {
         return this.free
     }
 }
-export { Loop }
+export = Loop;

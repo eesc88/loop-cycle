@@ -128,4 +128,4 @@ class Loop {
     }
 }
 
-export { Loop }
+export = Loop;

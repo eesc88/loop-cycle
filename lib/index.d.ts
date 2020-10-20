@@ -28,4 +28,4 @@ declare class Loop {
      */
     stop(): Boolean;
 }
-export { Loop };
+export = Loop;
